@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Declutter",
+  "version": "1.0",
+  "description": "Focus mode for YouTube",
+
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
