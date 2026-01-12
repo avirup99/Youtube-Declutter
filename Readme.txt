@@ -7,7 +7,6 @@ A Chrome extension that removes distractions from YouTube and creates a clean, f
 - Removes recommended videos and Shorts
 - Focus mode: only video, description, and comments
 - Playlist appears in the right side without the recommended videos
-- Works with YouTube’s dynamic navigation 
 
 
 🛠 Built With
@@ -24,6 +23,7 @@ A Chrome extension that removes distractions from YouTube and creates a clean, f
 🎯 Purpose
 
 This extension was built to reduce distractions, increase focus.
+
 
 
 
