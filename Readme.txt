@@ -9,14 +9,12 @@ A Chrome extension that removes distractions from YouTube and creates a clean, f
 - Playlist appears in center when watching playlist videos
 - Works with YouTube’s dynamic navigation 
 
+
 🛠 Built With
 - JavaScript
-- Chrome Extensions (Manifest V3)
-- MutationObserver
-- DOM manipulation
+
 
 📦 How to Install (Developer Mode)
-
 1. Download or clone this repository
 2. Open Chrome and go to `chrome://extensions`
 3. Enable **Developer mode**
@@ -26,5 +24,6 @@ A Chrome extension that removes distractions from YouTube and creates a clean, f
 🎯 Purpose
 
 This extension was built to reduce distractions, increase focus.
+
 
 
