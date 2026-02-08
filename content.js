@@ -202,10 +202,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   return true;
 });
 
-// ============================================
-// FOCUS MODE (Your existing code)
-// ============================================
-
 function injectStyles() {
   if (document.getElementById('focus-mode-styles')) return;
   
@@ -352,4 +348,5 @@ window.addEventListener("yt-page-data-updated", () => {
   applyFocusMode();
   setTimeout(applyFocusMode, 300);
 });
+
 
