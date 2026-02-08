@@ -1,7 +1,3 @@
-// ============================================
-// FONT CUSTOMIZATION WITH GOOGLE FONTS
-// ============================================
-
 console.log('YouTube Declutter: Content script loaded');
 
 function applyCustomFont(fontFamily, fontWeight = 400) {
@@ -356,3 +352,4 @@ window.addEventListener("yt-page-data-updated", () => {
   applyFocusMode();
   setTimeout(applyFocusMode, 300);
 });
+
