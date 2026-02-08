@@ -1,14 +1,30 @@
 {
   "manifest_version": 3,
   "name": "YouTube Declutter",
-  "version": "1.0",
-  "description": "Focus mode for YouTube",
-
+  "version": "1.0.0",
+  "description": "Customize YouTube's appearance and fonts",
+  
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YouTube Declutter"
+  },
+  
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/*"],
+      "matches": ["*://*.youtube.com/*"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_end",
+      "all_frames": true
     }
   ]
 }
