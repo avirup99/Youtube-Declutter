@@ -1,3 +1,4 @@
+// font customization with google font
 console.log('YouTube Declutter: Content script loaded');
 
 function applyCustomFont(fontFamily, fontWeight = 400) {
@@ -181,7 +182,6 @@ chrome.storage.sync.get(['selectedFont', 'fontWeight'], function(result) {
   }
 });
 
-// Listen for messages from popup
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   console.log('Message received:', request);
   
@@ -199,8 +199,25 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     sendResponse({ status: 'Font changed successfully' });
   }
   
+  if (request.action === 'toggleFocusMode') {
+    if (request.enabled) {
+      applyFocusMode();
+      if (focusModeObserver) focusModeObserver.disconnect();
+      focusModeObserver = watchForChanges();
+    } else {
+      removeFocusMode();
+      if (focusModeObserver) {
+        focusModeObserver.disconnect();
+        focusModeObserver = null;
+      }
+    }
+    sendResponse({ status: 'Focus mode toggled' });
+  }
+  
   return true;
 });
+
+// focus mode
 
 function injectStyles() {
   if (document.getElementById('focus-mode-styles')) return;
@@ -283,11 +300,44 @@ function applyFocusMode() {
   }
 }
 
+function removeFocusMode() {
+  // Remove the style element
+  const styleEl = document.getElementById('focus-mode-styles');
+  if (styleEl) styleEl.remove();
+  
+  // Show homepage videos
+  const richGrid = document.querySelector('ytd-rich-grid-renderer');
+  if (richGrid) {
+    richGrid.style.display = '';
+  }
+  
+  // Show sidebar recommendations
+  const secondary = document.getElementById("secondary");
+  if (secondary) {
+    const related = secondary.querySelector("#related");
+    if (related) {
+      related.style.display = "";
+    }
+    
+    const watchNext = secondary.querySelector("ytd-watch-next-secondary-results-renderer");
+    if (watchNext) {
+      watchNext.style.display = "";
+    }
+  }
+}
+
 function watchForChanges() {
   let timeout;
   const throttledApply = () => {
     clearTimeout(timeout);
-    timeout = setTimeout(applyFocusMode, 100);
+    timeout = setTimeout(() => {
+      chrome.storage.sync.get(['focusModeEnabled'], function(result) {
+        const focusModeEnabled = result.focusModeEnabled !== undefined ? result.focusModeEnabled : true;
+        if (focusModeEnabled) {
+          applyFocusMode();
+        }
+      });
+    }, 100);
   };
 
   const observer = new MutationObserver(throttledApply);
@@ -302,24 +352,32 @@ function watchForChanges() {
   return observer;
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', applyFocusMode);
-} else {
-  applyFocusMode();
-}
+// focus mode initialization
 
-let observer = watchForChanges();
+let focusModeObserver = null;
 
+// Initial load - check focus mode state
+chrome.storage.sync.get(['focusModeEnabled'], function(result) {
+  const focusModeEnabled = result.focusModeEnabled !== undefined ? result.focusModeEnabled : true;
+  
+  if (focusModeEnabled) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', applyFocusMode);
+    } else {
+      applyFocusMode();
+    }
+    focusModeObserver = watchForChanges();
+  }
+});
+
+// Handle page navigation
 window.addEventListener("yt-navigate-start", () => {
-  if (observer) observer.disconnect();
+  if (focusModeObserver) {
+    focusModeObserver.disconnect();
+  }
 });
 
 window.addEventListener("yt-navigate-finish", () => {
-  applyFocusMode();
-  setTimeout(applyFocusMode, 100);
-  setTimeout(applyFocusMode, 500);
-  setTimeout(applyFocusMode, 1000);
-  
   // Re-apply font after navigation
   chrome.storage.sync.get(['selectedFont', 'fontWeight'], function(result) {
     const font = result.selectedFont || 'default';
@@ -340,13 +398,44 @@ window.addEventListener("yt-navigate-finish", () => {
       iframeObserver = watchForIframes(font, weight);
     }
   });
- 
-  observer = watchForChanges();
+  
+  // Check focus mode state
+  chrome.storage.sync.get(['focusModeEnabled'], function(result) {
+    const focusModeEnabled = result.focusModeEnabled !== undefined ? result.focusModeEnabled : true;
+    
+    if (focusModeEnabled) {
+      applyFocusMode();
+      setTimeout(applyFocusMode, 100);
+      setTimeout(applyFocusMode, 500);
+      setTimeout(applyFocusMode, 1000);
+      focusModeObserver = watchForChanges();
+    } else {
+      // Make sure everything is visible
+      removeFocusMode();
+    }
+  });
 });
 
 window.addEventListener("yt-page-data-updated", () => {
-  applyFocusMode();
-  setTimeout(applyFocusMode, 300);
+  chrome.storage.sync.get(['focusModeEnabled'], function(result) {
+    const focusModeEnabled = result.focusModeEnabled !== undefined ? result.focusModeEnabled : true;
+    if (focusModeEnabled) {
+      applyFocusMode();
+      setTimeout(applyFocusMode, 300);
+    }
+  });
 });
 
+// Load focus mode state
+chrome.storage.sync.get(['focusModeEnabled'], function(result) {
+  const focusModeEnabled = result.focusModeEnabled !== undefined ? result.focusModeEnabled : true;
+  
+  if (focusModeEnabled) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', applyFocusMode);
+    } else {
+      applyFocusMode();
+    }
+  }
+});
 
