@@ -151,6 +151,53 @@ function populatePopularChips() {
   });
 }
 
+// focus mode toggle
+
+// Load focus mode state
+chrome.storage.sync.get(['focusModeEnabled'], function(result) {
+  const focusModeEnabled = result.focusModeEnabled !== undefined ? result.focusModeEnabled : true;
+  updateFocusModeButton(focusModeEnabled);
+});
+
+// Toggle button click handler
+document.getElementById('toggle-focus-btn').addEventListener('click', function() {
+  chrome.storage.sync.get(['focusModeEnabled'], function(result) {
+    const currentState = result.focusModeEnabled !== undefined ? result.focusModeEnabled : true;
+    const newState = !currentState;
+    
+    chrome.storage.sync.set({ focusModeEnabled: newState }, function() {
+      updateFocusModeButton(newState);
+      
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        if (tabs[0]) {
+          chrome.tabs.sendMessage(
+            tabs[0].id,
+            { action: 'toggleFocusMode', enabled: newState },
+            function(response) {
+              if (chrome.runtime.lastError) {
+                showStatus('Please refresh the page to apply changes', false);
+              } else {
+                showStatus(newState ? 'Focus Mode ON' : 'Focus Mode OFF', false);
+              }
+            }
+          );
+        }
+      });
+    });
+  });
+});
+
+function updateFocusModeButton(enabled) {
+  const btn = document.getElementById('toggle-focus-btn');
+  if (enabled) {
+    btn.textContent = '🎯 Focus Mode: ON';
+    btn.style.background = '#ea4335';
+  } else {
+    btn.textContent = '📺 Focus Mode: OFF';
+    btn.style.background = '#34a853';
+  }
+}
+
 // Weight button handling
 document.querySelectorAll('.weight-btn').forEach(btn => {
   btn.addEventListener('click', function(e) {
@@ -343,7 +390,7 @@ function showStatus(message, isError) {
   }, 3000);
 }
 
-// ==================== INITIALIZE EVERYTHING ====================
+// initialize everything
 console.log('Initializing popup...');
 
 loadGoogleFonts();
